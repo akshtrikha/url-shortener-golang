@@ -3,11 +3,15 @@
 package routes
 
 import (
+	"github.com/akshtrikha/url-shortener-golang/database"
+	"os"
+	"strconv"
 	"time"
 
-	"github.com/akshtrikha/url-shortener-golang/api/helpers"
-	"github.com/gofiber/fiber/v2"
+	"github.com/akshtrikha/url-shortener-golang/helpers"
 	"github.com/asaskevich/govalidator"
+	"github.com/go-redis/redis/v8"
+	"github.com/gofiber/fiber/v2"
 )
 
 // ? Defines the structure of a request
@@ -36,6 +40,21 @@ func ShortenURL(ctx *fiber.Ctx) error {
 	}
 
 	//TODO: implement rate limiting
+	r := database.CreateClient(1)
+	defer r.Close()
+	value, err := r.Get(database.Ctx, ctx.IP()).Result()
+	if err == redis.Nil {
+		_ = r.Set(database.Ctx, ctx.IP(), os.Getenv("API_QUOTA"), 30*60*time.Second).Err()
+	} else {
+		valInt, _ := strconv.Atoi(value)
+		if valInt <= 0 {
+			limit, _ := r.TTL(database.Ctx, ctx.IP()).Result()
+			return ctx.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
+				"error":            "Rate limit exceeded",
+				"rate_limit_reset": limit,
+			})
+		}
+	}
 
 	//? validate URL
 	if !govalidator.IsURL(body.URL) {
@@ -49,6 +68,9 @@ func ShortenURL(ctx *fiber.Ctx) error {
 
 	//? enforce HTTPS
 	body.URL = helpers.EnforceHTTP(body.URL)
+
+	//? Decrement the value of the allowed request to handle rate limiting
+	r.Decr(database.Ctx, ctx.IP())
 
 	return nil
 }

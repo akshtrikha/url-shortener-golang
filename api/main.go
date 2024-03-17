@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/akshtrikha/url-shortener-golang/api/routes"
+	"github.com/akshtrikha/url-shortener-golang/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
@@ -13,7 +13,7 @@ import (
 
 func setupRoutes(app *fiber.App) {
 	app.Get("/:url", routes.ResolveURL)
-	app.Post("/api/v1", routes.shortenURL)
+	app.Post("/api/v1", routes.ShortenURL)
 }
 
 func main() {
