@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	https://youtu.be/iDQAZEJK8lI?si=bcpJFjNW-ziQrLcy
+	"github.com/go-redis/redis/v8"
 )
 
 // Ctx is the background context.
