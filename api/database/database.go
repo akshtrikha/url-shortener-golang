@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"os"
+	"github.com/akshtrikha/url-shortener-golang/logger"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -15,10 +16,12 @@ var Ctx = context.Background()
 // This redis client can be used to perform operations on the redis db.
 func CreateClient(dbNo int) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("DB_ADD"),
+		Addr:     os.Getenv("DB_ADDR"),
 		Password: os.Getenv("DB_PASS"),
 		DB:       dbNo,
 	})
+
+	logger.Log.Println("Created the redis client", rdb)
 
 	return rdb
 }

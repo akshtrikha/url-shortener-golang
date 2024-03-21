@@ -4,6 +4,7 @@ package routes
 
 import (
 	"github.com/akshtrikha/url-shortener-golang/database"
+	"github.com/akshtrikha/url-shortener-golang/logger"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
@@ -11,13 +12,18 @@ import (
 
 // ResolveURL takes the shortened URL and redirects to the original URL
 func ResolveURL(c *fiber.Ctx) error {
+	logger.Log.Println("api/ResolveURL hit")
+
 	// Get the url from the params in the fiber.Context
 	url := c.Params("url")
+	logger.Log.Println("URL: " + url)
 
 	// Connect to the redis database using CreateClient implemented in the database package
-	r := database.CreateClient(1)
+	r := database.CreateClient(0)
 	// Defer the close call to the redis client
 	defer r.Close()
+
+	logger.Log.Println("Redis Client Started")
 
 	// Get the value, err from the redis database
 	// By passing the context to the database and the shortened URL
